@@ -102,7 +102,7 @@ def get_reviewed_cards() -> List[int]:
 def get_card_status_by_day(card_id: int) -> pd.DataFrame:
     """
     From the first day we've reviewed it to today, what status
-    ('known', 'due') was each card in?
+    ('hard', 'good', 'easy', 'due') was each card in?
     """
     sql = f"""
         select
@@ -122,9 +122,10 @@ def get_card_status_by_day(card_id: int) -> pd.DataFrame:
 
         # look at pairs of days until there are no more,
         # fill with today when we run out of values
-        row_a = [
-            (datetime(*map(int, date.split("-"))), delta) for _, date, delta in data
-        ]
+
+        to_datetime = lambda x: datetime(*map(int, x.split("-")))
+
+        row_a = [(to_datetime(date), delta) for _, date, delta in data]
         row_b = row_a[1:]
 
         for pair in zip_longest(row_a, row_b, fillvalue=(datetime.now(), 0)):
@@ -142,7 +143,16 @@ def get_card_status_by_day(card_id: int) -> pd.DataFrame:
                 if past_due:
                     card_statuses[date_str] = "due"
                 else:
-                    card_statuses[date_str] = "known"
+                    if delta < 7:
+                        card_statuses[date_str] = "< week"
+                    elif delta < 30:
+                        card_statuses[date_str] = "< month"
+                    elif delta < 180:
+                        card_statuses[date_str] = "< 6 months"
+                    elif delta < 365:
+                        card_statuses[date_str] = "< year"
+                    else:
+                        card_statuses[date_str] = "> year"
 
     df = pd.DataFrame(
         {
