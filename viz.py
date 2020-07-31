@@ -2,12 +2,14 @@ import matplotlib
 import matplotlib.pyplot as plt
 
 
-def plot_trended_study_time(df):
+def plot_trended_study_time(df, num_date_labels=8):
     fig, ax = plt.subplots(figsize=(16, 10))
 
     ax.scatter(df["date"], df["seconds"], alpha=0.5, s=10)
 
-    loc = matplotlib.ticker.MultipleLocator(250)
+    xlim = ax.get_xlim()
+    loc_interval = int((xlim[1] - xlim[0]) / num_date_labels)
+    loc = matplotlib.ticker.MultipleLocator(loc_interval)
     ax.xaxis.set_major_locator(loc)
 
     loc = matplotlib.ticker.MultipleLocator(60 * 60)
@@ -44,11 +46,8 @@ def plot_trended_study_time(df):
     return ax
 
 
-def plot_card_catalog_growth(df):
+def plot_card_catalog_growth(df, num_date_labels=8):
     fig, ax = plt.subplots(figsize=(16, 10))
-
-    loc = matplotlib.ticker.MultipleLocator(250)
-    ax.xaxis.set_major_locator(loc)
 
     ax.stackplot(
         df.index,
@@ -63,8 +62,13 @@ def plot_card_catalog_growth(df):
         labels=["> year", "< year", "< 6 months", "< month", "< week", "due"],
         colors=["#309143", "#51b364", "#8ace7e", "#f0bd27", "#ff684c", "b60a1c"],
     )
-    ax.xaxis.set_major_locator(loc)
     ax.legend(loc="upper left", fontsize=12)
 
     ax.set_title("Card Growth By Ease", fontsize=20)
+
+    xlim = ax.get_xlim()
+    loc_interval = int((xlim[1] - xlim[0]) / num_date_labels)
+    loc = matplotlib.ticker.MultipleLocator(loc_interval)
+    ax.xaxis.set_major_locator(loc)
+
     return ax
